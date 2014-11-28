@@ -77,10 +77,10 @@ func TestMeanIncrementWeighted(t *testing.T) {
 			}
 		}
 	}
-	if !Panics( func() { NewMean().IncrementSliceWeighted(make([]float64, 2), make([]float64, 3)) } ) {
+	if !Panics(func() { NewMean().IncrementSliceWeighted(make([]float64, 2), make([]float64, 3)) }) {
 		t.Errorf("IncrementSliceWeighted did not panic with x, length length mismatch")
 	}
-	
+
 }
 
 func TestMeanCombine(t *testing.T) {
@@ -91,8 +91,8 @@ func TestMeanCombine(t *testing.T) {
 		{
 			x1:  []float64{4, -3, 7, 8, 10},
 			x2:  []float64{1, 2, 3, 4},
-			ans: 4, }, 
-		{		
+			ans: 4},
+		{
 			ans: 0,
 		},
 	} {
@@ -103,5 +103,5 @@ func TestMeanCombine(t *testing.T) {
 			t.Errorf("Combined mean mismatch case %d. Expected %v, Found %v", i, test.ans, mu)
 		}
 	}
-	
+
 }
