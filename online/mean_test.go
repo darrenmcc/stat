@@ -98,10 +98,9 @@ func TestMeanCombine(t *testing.T) {
 	} {
 		m1 := NewMean(test.x1...)
 		m2 := NewMean(test.x2...)
-		m3 := Combine(m1, m2)
-		if mu := m3.Result(); math.Abs(test.ans-mu) > 1e-14 {
+		m1.Combine(m2)
+		if mu := m1.Result(); math.Abs(test.ans-mu) > 1e-14 {
 			t.Errorf("Combined mean mismatch case %d. Expected %v, Found %v", i, test.ans, mu)
 		}
 	}
-
 }

@@ -41,14 +41,12 @@ func (m *mean) Result() float64 {
 }
 
 // Combine two Means into a single Mean.
-func Combine(m1, m2 *mean) *mean {
-	if m1.N == 0 && m2.N == 0 {
-		return NewMean()
+func (m1 *mean) Combine(m2 *mean) {
+	if m2.N == 0 {
+		return
 	}
-	return &mean{
-		M: m1.M + m2.N/(m1.N+m2.N)*(m2.M-m1.M),
-		N: m1.N + m2.N,
-	}
+	m1.N += m2.N
+	m1.M += m2.N / m1.N * (m2.M - m1.M)
 }
 
 // IncrementSlice updates a Mean with a slice of inputs.
