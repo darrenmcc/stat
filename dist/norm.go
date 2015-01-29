@@ -111,19 +111,6 @@ func (n Normal) LogProb(x float64) float64 {
 	return negLogRoot2Pi - math.Log(n.Sigma) - (x-n.Mu)*(x-n.Mu)/(2*n.Sigma*n.Sigma)
 }
 
-// MarshalParameters implements the ParameterMarshaler interface
-func (n Normal) MarshalParameters(p []Parameter) {
-	nParam := n.NumParameters()
-	if len(p) != nParam {
-		panic("normal: improper parameter length")
-	}
-	p[0].Name = "Mu"
-	p[0].Value = n.Mu
-	p[1].Name = "Sigma"
-	p[1].Value = n.Sigma
-	return
-}
-
 // Mean returns the mean of the probability distribution.
 func (n Normal) Mean() float64 {
 	return n.Mu
@@ -218,21 +205,6 @@ func (Normal) SuffStat(samples, weights, suffStat []float64) (nSamples float64) 
 // Survival returns the survival function (complementary CDF) at x.
 func (n Normal) Survival(x float64) float64 {
 	return 0.5 * (1 - math.Erf((x-n.Mu)/(n.Sigma*math.Sqrt2)))
-}
-
-// UnmarshalParameters implements the ParameterMarshaler interface
-func (n *Normal) UnmarshalParameters(p []Parameter) {
-	if len(p) != n.NumParameters() {
-		panic("normal: incorrect number of parameters to set")
-	}
-	if p[0].Name != "Mu" {
-		panic("normal: " + panicNameMismatch)
-	}
-	if p[1].Name != "Sigma" {
-		panic("normal: " + panicNameMismatch)
-	}
-	n.Mu = p[0].Value
-	n.Sigma = p[1].Value
 }
 
 // Variance returns the variance of the probability distribution.

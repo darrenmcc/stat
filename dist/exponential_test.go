@@ -38,10 +38,3 @@ func TestExponentialProb(t *testing.T) {
 	}
 	testDistributionProbs(t, Exponential{Rate: 1}, "Exponential", pts)
 }
-
-func TestExponentialFitPrior(t *testing.T) {
-	testConjugateUpdate(t, &Exponential{
-		Rate: 13.7,
-	},
-		func() ConjugateUpdater { return &Exponential{} })
-}

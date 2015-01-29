@@ -134,18 +134,6 @@ func (l Laplace) LogProb(x float64) float64 {
 	return -math.Ln2 - math.Log(l.Scale) - math.Abs(x-l.Mu)/l.Scale
 }
 
-// MarshalParameters implements the ParameterMarshaler interface
-func (l Laplace) MarshalParameters(p []Parameter) {
-	if len(p) != l.NumParameters() {
-		panic("dist: slice length mismatch")
-	}
-	p[0].Name = "Mu"
-	p[0].Value = l.Mu
-	p[1].Name = "Scale"
-	p[1].Value = l.Scale
-	return
-}
-
 // Mean returns the mean of the probability distribution.
 func (l Laplace) Mean() float64 {
 	return l.Mu
@@ -213,21 +201,6 @@ func (l Laplace) Survival(x float64) float64 {
 		return 1 - 0.5*math.Exp((x-l.Mu)/l.Scale)
 	}
 	return 0.5 * math.Exp(-(x-l.Mu)/l.Scale)
-}
-
-// UnmarshalParameters implements the ParameterMarshaler interface
-func (l *Laplace) UnmarshalParameters(p []Parameter) {
-	if len(p) != l.NumParameters() {
-		panic("dist: slice length mismatch")
-	}
-	if p[0].Name != "Mu" {
-		panic("laplace: " + panicNameMismatch)
-	}
-	if p[1].Name != "Scale" {
-		panic("laplace: " + panicNameMismatch)
-	}
-	l.Mu = p[0].Value
-	l.Scale = p[1].Value
 }
 
 // Variance returns the variance of the probability distribution.

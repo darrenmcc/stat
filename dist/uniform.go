@@ -47,18 +47,6 @@ func (u Uniform) LogProb(x float64) float64 {
 	return -math.Log(u.Max - u.Min)
 }
 
-// MarshalParameters implements the ParameterMarshaler interface
-func (u Uniform) MarshalParameters(p []Parameter) {
-	if len(p) != u.NumParameters() {
-		panic("uniform: improper parameter length")
-	}
-	p[0].Name = "Min"
-	p[0].Value = u.Min
-	p[1].Name = "Max"
-	p[1].Value = u.Max
-	return
-}
-
 // Mean returns the mean of the probability distribution.
 func (u Uniform) Mean() float64 {
 	return (u.Max - u.Min) / 2
@@ -119,22 +107,6 @@ func (u Uniform) Survival(x float64) float64 {
 		return 0
 	}
 	return (u.Max - x) / (u.Max - u.Min)
-}
-
-// UnmarshalParameters implements the ParameterMarshaler interface
-func (u *Uniform) UnmarshalParameters(p []Parameter) {
-	if len(p) != u.NumParameters() {
-		panic("uniform: incorrect number of parameters to set")
-	}
-	if p[0].Name != "Min" {
-		panic("uniform: " + panicNameMismatch)
-	}
-	if p[1].Name != "Max" {
-		panic("uniform: " + panicNameMismatch)
-	}
-
-	u.Min = p[0].Value
-	u.Max = p[1].Value
 }
 
 // Variance returns the variance of the probability distribution.
