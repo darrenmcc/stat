@@ -7,6 +7,8 @@ package dist
 import (
 	"math"
 	"testing"
+
+	"github.com/gonum/floats"
 )
 
 func TestExponentialProb(t *testing.T) {
@@ -37,4 +39,64 @@ func TestExponentialProb(t *testing.T) {
 		},
 	}
 	testDistributionProbs(t, Exponential{Rate: 1}, "Exponential", pts)
+}
+
+func TestExponentialFitPrior(t *testing.T) {
+	for i, test := range []struct {
+		rate    float64
+		samps   []float64
+		weights []float64
+	}{
+		{
+			rate:    13.7,
+			samps:   randn(&Exponential{Rate: 13}, 10),
+			weights: nil,
+		},
+		{
+			rate:    13.7,
+			samps:   randn(&Exponential{Rate: 13}, 10),
+			weights: ones(10),
+		},
+		{
+			rate:    13.7,
+			samps:   randn(&Exponential{Rate: 13}, 10),
+			weights: randn(&Exponential{Rate: 13}, 10),
+		},
+	} {
+		// ensure that conjugate produces the same result both incrementally and all at once
+		incDist := &Exponential{
+			Rate: test.rate,
+		}
+		stats := make([]float64, incDist.NumSuffStat())
+		prior := make([]float64, 1)
+		if test.weights != nil {
+			for j := range test.samps {
+				nsInc := incDist.SuffStat(test.samps[j:j+1], test.weights[j:j+1], stats)
+				incDist.ConjugateUpdate(stats, nsInc, prior)
+
+				allDist := &Exponential{
+					Rate: test.rate,
+				}
+				nsAll := allDist.SuffStat(test.samps[0:j+1], test.weights[0:j+1], stats)
+				allDist.ConjugateUpdate(stats, nsAll, []float64{0})
+				if !floats.EqualWithinAbs(incDist.Rate, allDist.Rate, 1e-14) {
+					t.Errorf("prior doesn't match after incremental update for (%d, %d). Incremental is %v, all at once is %v", i, j, incDist.Rate, allDist.Rate)
+				}
+			}
+		} else {
+			for j := range test.samps {
+				nsInc := incDist.SuffStat(test.samps[j:j+1], nil, stats)
+				incDist.ConjugateUpdate(stats, nsInc, prior)
+
+				allDist := &Exponential{
+					Rate: test.rate,
+				}
+				nsAll := allDist.SuffStat(test.samps[0:j+1], nil, stats)
+				allDist.ConjugateUpdate(stats, nsAll, []float64{0})
+				if !floats.EqualWithinAbs(incDist.Rate, allDist.Rate, 1e-14) {
+					t.Errorf("prior doesn't match after incremental update for (%d, %d). Incremental is %v, all at once is %v", i, j, incDist.Rate, allDist.Rate)
+				}
+			}
+		}
+	}
 }

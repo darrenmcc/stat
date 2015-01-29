@@ -59,3 +59,37 @@ func testDistributionProbs(t *testing.T, dist UniProbDist, name string, pts []un
 		}
 	}
 }
+
+func parametersEqual(p1, p2 []Parameter, tol float64) bool {
+	for i, p := range p1 {
+		if p.Name != p2[i].Name {
+			return false
+		}
+		if math.Abs(p.Value-p2[i].Value) > tol {
+			return false
+		}
+	}
+	return true
+}
+
+// rander can generate random samples from a given distribution
+type rander interface {
+	Rand() float64
+}
+
+// randn generates a specified number of random samples
+func randn(dist rander, n int) []float64 {
+	x := make([]float64, n)
+	for i := range x {
+		x[i] = dist.Rand()
+	}
+	return x
+}
+
+func ones(n int) []float64 {
+	x := make([]float64, n)
+	for i := range x {
+		x[i] = 1
+	}
+	return x
+}
