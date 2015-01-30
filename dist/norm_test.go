@@ -7,6 +7,8 @@ package dist
 import (
 	"math"
 	"testing"
+
+	"github.com/gonum/floats"
 )
 
 // TestNormalProbs tests LogProb, Prob, CumProb, and Quantile
@@ -78,4 +80,76 @@ func TestNormalProbs(t *testing.T) {
 		},
 	}
 	testDistributionProbs(t, Normal{Mu: 2, Sigma: 5}, "normal", pts)
+}
+
+func TestNormalFitPrior(t *testing.T) {
+	for i, test := range []struct {
+		mu, sigma float64
+		samps     []float64
+		weights   []float64
+	}{
+		{
+			mu:      2,
+			sigma:   5,
+			samps:   randn(&Normal{Mu: 2, Sigma: 5}, 10),
+			weights: nil,
+		},
+		{
+			mu:      2,
+			sigma:   5,
+			samps:   randn(&Normal{Mu: 2, Sigma: 5}, 10),
+			weights: ones(10),
+		},
+		{
+			mu:      2,
+			sigma:   5,
+			samps:   randn(&Normal{Mu: 2, Sigma: 5}, 10),
+			weights: randn(&Exponential{Rate: 1}, 10),
+		},
+	} {
+		// ensure that conjugate produces the same result both incrementally and all at once
+		incDist := &Normal{
+			Mu:    test.mu,
+			Sigma: test.sigma,
+		}
+		stats := make([]float64, incDist.NumSuffStat())
+		prior := make([]float64, 2)
+		if test.weights != nil {
+			for j := range test.samps {
+				nsInc := incDist.SuffStat(test.samps[j:j+1], test.weights[j:j+1], stats)
+				incDist.ConjugateUpdate(stats, nsInc, prior)
+
+				allDist := &Normal{
+					Mu:    test.mu,
+					Sigma: test.sigma,
+				}
+				nsAll := allDist.SuffStat(test.samps[0:j+1], test.weights[0:j+1], stats)
+				allDist.ConjugateUpdate(stats, nsAll, []float64{0, 0})
+				if !floats.EqualWithinAbs(incDist.Mu, allDist.Mu, 1e-14) {
+					t.Errorf("prior doesn't match after incremental update for (%d, %d). Incremental Mu is %v, all at once Mu is %v", i, j, incDist.Mu, allDist.Mu)
+				}
+				if !floats.EqualWithinAbs(incDist.Sigma, allDist.Sigma, 1e-14) {
+					t.Errorf("prior doesn't match after incremental update for (%d, %d). Incremental Sigma is %v, all at once Sigma is %v", i, j, incDist.Sigma, allDist.Sigma)
+				}
+			}
+		} else {
+			for j := range test.samps {
+				nsInc := incDist.SuffStat(test.samps[j:j+1], nil, stats)
+				incDist.ConjugateUpdate(stats, nsInc, prior)
+
+				allDist := &Normal{
+					Mu:    test.mu,
+					Sigma: test.sigma,
+				}
+				nsAll := allDist.SuffStat(test.samps[0:j+1], nil, stats)
+				allDist.ConjugateUpdate(stats, nsAll, []float64{0, 0})
+				if !floats.EqualWithinAbs(incDist.Mu, allDist.Mu, 1e-14) {
+					t.Errorf("prior doesn't match after incremental update for (%d, %d). Incremental Mu is %v, all at once Mu is %v", i, j, incDist.Mu, allDist.Mu)
+				}
+				if !floats.EqualWithinAbs(incDist.Sigma, allDist.Sigma, 1e-14) {
+					t.Errorf("prior doesn't match after incremental update for (%d, %d). Incremental Sigma is %v, all at once Sigma is %v", i, j, incDist.Sigma, allDist.Sigma)
+				}
+			}
+		}
+	}
 }
