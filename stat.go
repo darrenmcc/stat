@@ -76,12 +76,7 @@ func CDF(q float64, c CumulantKind, x, weights []float64) float64 {
 		return 1
 	}
 
-	var sumWeights float64
-	if weights == nil {
-		sumWeights = float64(len(x))
-	} else {
-		sumWeights = floats.Sum(weights)
-	}
+	sumWeights := floats.Sum(weights)
 
 	// Calculate the index
 	switch c {
