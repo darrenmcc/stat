@@ -79,24 +79,25 @@ func CDF(q float64, c CumulantKind, x, weights []float64) float64 {
 	sumWeights := floats.Sum(weights)
 
 	// Calculate the index
-	switch c {
-	case Empirical:
-		// Find the smallest value that is greater than that percent of the samples
-		var w float64
-		for i, v := range x {
-			if v > q {
-				return w / sumWeights
-			}
-			if weights == nil {
-				w++
-			} else {
-				w += weights[i]
-			}
-		}
-		panic("impossible")
-	default:
+
+	if c != Empirical {
 		panic("stat: bad cumulant kind")
 	}
+
+	// Find the smallest value that is greater than that percent of the samples
+	var w float64
+	for i, v := range x {
+		if v > q {
+			return w / sumWeights
+		}
+		if weights == nil {
+			w++
+		} else {
+			w += weights[i]
+		}
+	}
+	
+	panic("impossible")
 }
 
 // ChiSquare computes the chi-square distance between the observed frequences 'obs' and
