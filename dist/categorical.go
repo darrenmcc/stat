@@ -64,13 +64,12 @@ func (c Categorical) CDF(x float64) float64 {
 func (c Categorical) Entropy() float64 {
 	var ent float64
 	for _, w := range c.weights {
-		if w == 0 {
-			continue
+		if w != 0 {
+			p := w / c.heap[0]
+			ent -= p * math.Log(p)
 		}
-		p := w / c.heap[0]
-		ent += p * math.Log(p)
 	}
-	return -ent
+	return ent
 }
 
 // Len returns the number of values x could possibly take (the length of the
@@ -91,10 +90,7 @@ func (c Categorical) Mean() float64 {
 // Prob computes the value of the probability density function at x.
 func (c Categorical) Prob(x float64) float64 {
 	xi := int(x)
-	if float64(xi) != x {
-		return 0
-	}
-	if xi < 0 || xi > len(c.weights)-1 {
+	if float64(xi) != x || xi < 0 || xi > len(c.weights)-1 {
 		return 0
 	}
 	return c.weights[xi] / c.heap[0]
