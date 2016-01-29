@@ -929,18 +929,19 @@ func MeanVariance(x, weights []float64) (mean, variance float64) {
 			compensation += d
 		}
 		variance = (ss - compensation*compensation/float64(len(x))) / float64(len(x)-1)
-		return
+	} else {
+		var sumWeights float64
+		for i, v := range x {
+			w := weights[i]
+			d := v - mean
+			wd := w * d
+			ss += wd * d
+			compensation += wd
+			sumWeights += w
+		}
+		variance = (ss - compensation*compensation/sumWeights) / (sumWeights - 1)
+
 	}
 
-	var sumWeights float64
-	for i, v := range x {
-		w := weights[i]
-		d := v - mean
-		wd := w * d
-		ss += wd * d
-		compensation += wd
-		sumWeights += w
-	}
-	variance = (ss - compensation*compensation/sumWeights) / (sumWeights - 1)
-	return
+	return mean, variance
 }
