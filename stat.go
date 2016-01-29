@@ -96,7 +96,7 @@ func CDF(q float64, c CumulantKind, x, weights []float64) float64 {
 			w += weights[i]
 		}
 	}
-	
+
 	panic("impossible")
 }
 
@@ -112,10 +112,9 @@ func ChiSquare(obs, exp []float64) float64 {
 	var result float64
 	for i, a := range obs {
 		b := exp[i]
-		if a == 0 && b == 0 {
-			continue
+		if a != 0 || b != 0 {
+			result += (a - b) * (a - b) / b
 		}
-		result += (a - b) * (a - b) / b
 	}
 	return result
 }
